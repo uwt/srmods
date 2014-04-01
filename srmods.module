@@ -1,0 +1,152 @@
+<?php
+
+/**
+* @file
+* Add custom fields to the SOLR index. Query those fields. Display those
+*   fields in the search results.
+*
+* We use this technique as a more performant and clearner way than
+*   template.php preprocessing and node_loading().
+*/
+
+/**
+ * Implements hook_apachesolr_index_document_build().
+ *
+ * Add custom fields to the solr document
+ */
+function srmods_apachesolr_index_document_build(ApacheSolrDocument $document, $entity, $entity_type, $env_id) {
+  // Add the rendered-to-html string that will replace the snippet.
+  if(function_exists('_srmods_' . $entity->type . '_snippet')) {
+    $func = '_srmods_' . $entity->type . '_snippet';
+    $rendered_snippet = $func($entity);
+    
+    if($rendered_snippet){
+      $document->setMultiValue('sm_rendered_snippet', $rendered_snippet);
+    }
+  }
+  // Add the rendered string that will replacde the title
+  
+  if(function_exists('_srmods_' . $entity->type . '_title')) {
+    $func = '_srmods_' . $entity->type . '_title';
+    $rendered_title = $func($entity);
+    
+    if($rendered_title){
+      $document->setMultiValue('sm_rendered_title', $rendered_title);
+    }
+  }
+}
+
+/**
+ * Implementation of hook_apachesolr_query_alter($query)
+ *
+ * Add the newly indexed fields from above to the query result.
+ */
+function srmods_apachesolr_query_alter($query) {
+  $query->addParams(array('fl' => array('sm_rendered_title')));
+  $query->addParams(array('fl' => array('sm_rendered_snippet')));
+}
+
+
+/**
+* Implementation of hook_apache_solr_process_results().
+*
+* Alter (theme-esque) the results as they are being displayed.
+*   Essentially, setting the title and snippet.
+*/
+function srmods_apachesolr_process_results(&$results, DrupalSolrQueryInterface $query) {
+  foreach ($results as $id => $result) {
+
+    dpm($result, $result['bundle']);
+    switch($result['bundle']){
+
+      case 'department':
+        $results[$id]['snippet'] = $result['fields']['sm_rendered_snippet'][0];
+        break;
+
+      case 'employee':
+        $results[$id]['title'] = $result['fields']['sm_rendered_title'][0];
+        $results[$id]['snippet'] = $result['fields']['sm_rendered_snippet'][0];
+        break;
+
+    }
+  }
+}
+
+
+/**
+* Render the html snippet for the Department content type.
+*/
+function _srmods_department_snippet($entity) {
+  if($entity->type == 'department'){
+    //watchdog('srmods', $entity->type . ' <pre>entity in _srmods_department_snippet()' . print_r($entity, 1) . '</pre>');
+
+    return 'This <em>full html</em> snippet is returned from _srmods_department_snippet().';
+  }else{
+    return FALSE;
+  }
+  /*
+     if($entity->type == 'department') {
+     watchdog('srmods', '<pre>' . print_r($entity, 1) . '</pre>');
+     if (isset($entity->field_departmentsummary[$entity->language])) {
+     foreach($entity->field_departmentsummary[$entity->language] AS $id => $obj) {
+     if(isset($entity->field_departmentsummary[$entity->language][$id])) {
+     $document->setMultiValue('sm_field_departmentsummary', 'bobo lives!!');
+     }
+     }
+     }
+     }
+   */
+}
+
+/**
+* Render the snippet for the Employee content type
+*/
+function _srmods_employee_snippet($entity){
+  if($entity->type == 'employee') {
+    $display = 'search_result';
+    $fields = array();
+    //$fields[] = 'field_givenname';
+    //$fields[] = 'field_familyname';
+    $fields[] = 'field_photo';
+    $fields[] = 'field_employeeposition';
+    // glob the fields into one array
+    $glob = array();
+    foreach($fields as $field) {
+  watchdog('srmods', '<pre>$glob ' . print_r(field_view_field('node', $entity, $field, 'default'), 1) . '</pre>');
+      
+      $glob[$field] = render(field_view_field('node', $entity, $field, 'default'));
+    }
+    $return = implode(' ', $glob);
+
+    return $return;
+
+  }else {
+    return FALSE;
+  }
+}
+
+
+/**
+* Render the title for the Employee content type
+*/
+function _srmods_employee_title($entity) {
+  if($entity->type == 'employee'){
+    //watchdog('srmods', $entity->type . ' <pre>entity in _srmods_employee_title()' . print_r($entity, 1) . '</pre>');
+    
+    $emp_wrapper = entity_metadata_wrapper('node', $entity);
+    $givenname = $emp_wrapper->field_givenname->value();
+    $familyname = $emp_wrapper->field_familyname->value();
+    $suffix = $emp_wrapper->field_honorificsuffix->value();
+
+    $title = $givenname . ' ' . $familyname;
+    if(!empty($suffix)){
+      $title .= ' ' . $suffix;
+    }
+
+    //watchdog('srmods', '<pre>emp_wrapper in _srmods_employee_title()' . print_r($emp_wrapper, 1) . '</pre>');
+
+    return $title;
+  }else {
+    return FALSE;
+  }
+}

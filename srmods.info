@@ -1,0 +1,5 @@
+name = UWT Search Results Modifications
+description = Modifies search results so they contain formatted fields of data.
+core = 7.x
+package = UWT Custom
+files[] = srmods.module
