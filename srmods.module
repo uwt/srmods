@@ -56,7 +56,7 @@ function srmods_apachesolr_query_alter($query) {
 function srmods_apachesolr_process_results(&$results, DrupalSolrQueryInterface $query) {
   foreach ($results as $id => $result) {
 
-    dpm($result, $result['bundle']);
+    //dpm($result, $result['bundle']);
     switch($result['bundle']){
 
       case 'department':
@@ -99,25 +99,134 @@ function _srmods_department_snippet($entity) {
 }
 
 /**
+* Helper function to process/render/retrieve values from fields.
+*
+* @param $entity Array A complete entity
+* @param $fields Array Field system names to render
+* @param $view_mode String The view mode to use, defaults to 'default'
+*
+* @return Array An array of rendered values.
+*/
+function _srmods_get_field_values($entity, $fields, $view_mode = 'default') {
+
+    $return = array();
+    foreach($fields as $field) {
+    $field_info = field_info_field($field);
+    $field_type = $field_info['type'];
+    
+    //watchdog('srmods', '<pre>$field_type: ' . $field . ' = '
+      //. print_r($field_type, 1)
+      //. '</pre>');
+
+    if($field_type == 'text') {
+
+      $return[$field] = render(field_view_field('node', $entity, $field, $view_mode));
+
+    } else if ($field_type == 'field_collection') {
+     $return[$field] = _srmods_get_value_from_fc($entity, $field);
+      }
+    }
+    return $return;
+}
+
+function _srmods_get_value_from_fc($entity, $field) {
+  //TODO BEGIN this block will be converted to a utility function that
+  //  retrieves, renders and returns the values of field collection data
+  if ($field == 'field_employeeposition') {
+  $wrapper = entity_metadata_wrapper('node', $entity);
+  $items = field_get_items('node', $entity, 'field_employeeposition');
+  $value = array();
+  $position = array();
+  foreach($items as $id =>$itemid) {
+    $item = field_collection_field_get_entity($itemid);
+    
+    watchdog('srmods', '<pre>$item'
+      . print_r($item, 1)
+      . '</pre>');
+    $position[$id]['jobtitle'] = $item->field_jobtitle['und'][0]['safe_value'];
+    $position[$id]['phone'] = $item->field_workphone['und'][0]['safe_value'];
+  watchdog('srmods', '<pre>bobo '
+      . print_r($item->field_department['und']['0'], 1)
+      . '</pre>');
+    
+    $dept_title = $item->field_department['und']['0']['entity']->title;
+    $dept_url = $item->field_department['und']['0']['entity']->field_departmentwebsite['und'][0]['safe_value'];
+    $position[$id]['department'] = l($dept_title, $dept_url);
+  }
+  $value = $position;
+  watchdog('srmods', '<pre>$value'
+      . print_r($value, 1)
+      . '</pre>');
+  
+}
+  //TODO END block
+  return $value;
+}
+
+
+/**
 * Render the snippet for the Employee content type
 */
 function _srmods_employee_snippet($entity){
   if($entity->type == 'employee') {
-    $display = 'search_result';
+    // Set up the fields for display in the search results.
     $fields = array();
-    //$fields[] = 'field_givenname';
-    //$fields[] = 'field_familyname';
-    $fields[] = 'field_photo';
+    $fields[] = 'field_givenname';
+    $fields[] = 'field_familyname';
+    $fields[] = 'field_honorificsuffix';
+    $fields[] = 'field_email';
     $fields[] = 'field_employeeposition';
-    // glob the fields into one array
-    $glob = array();
-    foreach($fields as $field) {
-  watchdog('srmods', '<pre>$glob ' . print_r(field_view_field('node', $entity, $field, 'default'), 1) . '</pre>');
-      
-      $glob[$field] = render(field_view_field('node', $entity, $field, 'default'));
-    }
-    $return = implode(' ', $glob);
+    
+    // Render the fields
+    $values = _srmods_get_field_values($entity, $fields, 'srmods_view_mode');
+    
 
+    watchdog('srmods', '<pre>$values '
+      . print_r($values, 1)
+      . '</pre>');
+    
+
+    
+    //TODO make the $return return a nice zen grids layout
+    
+    
+
+    $return = '<div class="fifths">';
+    
+    $return .= '<div class="one-fifth-first">';
+    $return .= '<div class="icons-search-results-ct-employee">&nbsp;</div>';
+    $return .= $values['field_givenname'] . $values['field_familyname'] . $values['field_honoricsuffix'];
+    $return .= '</div>'; // end one-fifths-first
+    
+    $return .= '<div class="one-fifth-second">';
+    foreach($values['field_employeeposition'] as $id => $position){
+      $return .= $position['jobtitle'] . '<br />';
+    }
+    $return .= '</div>'; // end one-fifths-second
+    
+    $return .= '<div class="one-fifth-third">';
+    foreach($values['field_employeeposition'] as $id => $position){
+      $return .= $position['department'] . '<br />';
+    }
+    $return .= '</div>'; // end one-fifths-third
+    
+    $return .= '<div class="one-fifth-fourth">';
+    $return .= '<div class="label">Email</div>';
+    $return .= $values['field_email'];
+    $return .= '</div>'; // end one-fifths-fourth
+
+    $return .= '<div class="one-fifth-fifth">';
+    foreach($values['field_employeeposition'] as $id => $position){
+      $return .= $position['phone'] . '<br />';
+    }
+    $return .= '</div>';
+
+    $return .= '</div>'; // end fifths
+
+    watchdog('srmods', '<pre>$return '
+      . print_r($return, 1)
+      . '</pre>');
+    
     return $return;
 
   }else {
@@ -150,3 +259,15 @@ function _srmods_employee_title($entity) {
     return FALSE;
   }
 }
+
+
+/**
+* Add an additional view mode.
+*/
+function srmods_entity_info_alter(&$entity_info) {
+  $entity_info['node']['view modes']['srmods_view_mode'] = array(
+      'label' => t('Search Results Modified'),
+      'custom settings' => FALSE,
+      );
+}
+
