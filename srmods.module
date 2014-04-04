@@ -137,6 +137,7 @@ function _srmods_get_value_from_fc($entity, $field) {
   $items = field_get_items('node', $entity, 'field_employeeposition');
   $value = array();
   $position = array();
+  $position['count'] = (int) 1;
   foreach($items as $id =>$itemid) {
     $item = field_collection_field_get_entity($itemid);
     
@@ -152,7 +153,9 @@ function _srmods_get_value_from_fc($entity, $field) {
     $dept_title = $item->field_department['und']['0']['entity']->title;
     $dept_url = $item->field_department['und']['0']['entity']->field_departmentwebsite['und'][0]['safe_value'];
     $position[$id]['department'] = l($dept_title, $dept_url);
+    $position['count']++;
   }
+
   $value = $position;
   watchdog('srmods', '<pre>$value'
       . print_r($value, 1)
@@ -181,47 +184,47 @@ function _srmods_employee_snippet($entity){
     $values = _srmods_get_field_values($entity, $fields, 'srmods_view_mode');
     
 
-    watchdog('srmods', '<pre>$values '
+    
+
+    
+
+    $return = '<table style="width:100%;">';
+    $return .= '<tr>';
+
+    $return .= '<th rowspan="'.$values['field_employeeposition']['count'].'" style="width:20%">';
+    $return .= '<div class="icons-search-results-ct-employee">&nbsp;</div>';
+    $return .= $values['field_givenname'] . ' ' . $values['field_familyname'] . ' ' . $values['field_honoricsuffix'];
+    $return .= '</th>';
+    $return .= '</tr>';
+    unset($values['field_employeeposition']['count']);
+   watchdog('srmods', '<pre>$values for table'
       . print_r($values, 1)
       . '</pre>');
-    
-
-    
-    //TODO make the $return return a nice zen grids layout
-    
-    
-
-    $return = '<div class="fifths">';
-    
-    $return .= '<div class="one-fifth-first">';
-    $return .= '<div class="icons-search-results-ct-employee">&nbsp;</div>';
-    $return .= $values['field_givenname'] . $values['field_familyname'] . $values['field_honoricsuffix'];
-    $return .= '</div>'; // end one-fifths-first
-    
-    $return .= '<div class="one-fifth-second">';
     foreach($values['field_employeeposition'] as $id => $position){
-      $return .= $position['jobtitle'] . '<br />';
-    }
-    $return .= '</div>'; // end one-fifths-second
-    
-    $return .= '<div class="one-fifth-third">';
-    foreach($values['field_employeeposition'] as $id => $position){
-      $return .= $position['department'] . '<br />';
-    }
-    $return .= '</div>'; // end one-fifths-third
-    
-    $return .= '<div class="one-fifth-fourth">';
-    $return .= '<div class="label">Email</div>';
-    $return .= $values['field_email'];
-    $return .= '</div>'; // end one-fifths-fourth
+      
+      $return .= '<tr>';
+      
+      $return .= '<td style="width:20%;">';
+      $return .= $position['jobtitle'];
+      $return .= '</td>';
 
-    $return .= '<div class="one-fifth-fifth">';
-    foreach($values['field_employeeposition'] as $id => $position){
-      $return .= $position['phone'] . '<br />';
-    }
-    $return .= '</div>';
+      $return .= '<td style="width:20%;">';
+      $return .= $position['department'];
+      $return .= '</td>';
 
-    $return .= '</div>'; // end fifths
+      $return .= '<td style="width:20%;">';
+      $return .= $position['phone'];
+      $return .= '</td>';
+
+      $return .= '<td style="width:20%;">';
+      $return .= $values['field_email'];
+      $return .= '</td>';
+      
+    $return .= '</tr>';
+    }
+
+    $return .= '</table>';
+
 
     watchdog('srmods', '<pre>$return '
       . print_r($return, 1)
