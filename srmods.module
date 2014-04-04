@@ -78,24 +78,93 @@ function srmods_apachesolr_process_results(&$results, DrupalSolrQueryInterface $
 */
 function _srmods_department_snippet($entity) {
   if($entity->type == 'department'){
-    //watchdog('srmods', $entity->type . ' <pre>entity in _srmods_department_snippet()' . print_r($entity, 1) . '</pre>');
+    watchdog('srmods', 
+      '<pre>$entity ' . $entity->title
+      . print_r($entity, 1)
+      . '</pre>');
+    
+    $wrapper = entity_metadata_wrapper('node', $entity);
+    /*
+    watchdog('srmods', 
+      '<pre>$departmenttype in _srmods_department_snippet()'
+      . print_r($wrapper->field_departmenttype->value(), 1)
+      . '</pre>');
+    */
+    switch($wrapper->field_departmenttype->value()) {
+    
+    case 'academic-programs':
+      $icon = '<div class="icons-mortarboard type-icon"></div>';
+    break;
+    
+    case 'academic-support':
+      $icon = '<div class="icons-support32 type-icon"></div>';
+    break;
+    default:
+      $icon = '<div>Default, no icon yet.</div>';
+    }
+    
+    //$output = field_view_field('node', $node, 'field_name');
+    $dept_name = l($entity->title, 'node/' . $entity->nid);
+    $dept_summary = render(field_view_field(
+      'node', 
+      $entity, 
+      'field_departmentsummary', 
+      'srmods_view_mode'));
+    
+    $dept_email = render(field_view_field(
+      'node', 
+      $entity, 
+      'field_departmentemail', 
+      'srmods_view_mode'));
+    
+    $dept_phone = render(field_view_field(
+      'node', 
+      $entity, 
+      'field_departmentphonenumber', 
+      'srmods_view_mode'));
 
-    return 'This <em>full html</em> snippet is returned from _srmods_department_snippet().';
+    $dept_url = render(field_view_field(
+      'node', 
+      $entity, 
+      'field_departmentwebsite', 
+      'srmods_view_mode'));
+
+    $dept_location = render(field_view_field(
+      'node',
+      $entity,
+      'field_location',
+      'srmods_view_mode'));
+
+    $dept_web = l($entity->title . ' website', $dept_url);
+
+    $return = $icon . $dept_name .  $dept_summary . $dept_email . $dept_phone . $dept_web . $dept_location;
+    
+    $return = '<div class="fifths">';
+    $return .= '<div class="one-fifth-first">';
+    $return .= $icon . $dept_name;
+    $return .= '</div>'; // end one-fifth-first
+    $return .= '<div class="four-fifths-second">';
+    $return .= $dept_summary;
+    $return .= '</div>';
+    $return .= '</div>'; // end fifths
+    
+    $return .= '<div class="fifths">';
+    $return .= '<div class="one-fifth-first">&nbsp;</div>';
+    $return .= '<div class="one-fifth-second">' . $dept_phone. '</div>';
+    $return .= '<div class="one-fifth-third">' . $dept_email . '</div>';
+    $return .= '<div class="one-fifth-fourth">' . $dept_web . '</div>';
+    $return .= '<div class="one-fifth-fifth">' . $dept_location . '</div>';
+    $return .= '</div>'; // end fifths
+
+    watchdog('srmods', 
+      '<pre>$return '
+      . print_r($return, 1)
+      . '</pre>');
+    return $return;
+
   }else{
     return FALSE;
   }
-  /*
-     if($entity->type == 'department') {
-     watchdog('srmods', '<pre>' . print_r($entity, 1) . '</pre>');
-     if (isset($entity->field_departmentsummary[$entity->language])) {
-     foreach($entity->field_departmentsummary[$entity->language] AS $id => $obj) {
-     if(isset($entity->field_departmentsummary[$entity->language][$id])) {
-     $document->setMultiValue('sm_field_departmentsummary', 'bobo lives!!');
-     }
-     }
-     }
-     }
-   */
 }
 
 /**
@@ -129,40 +198,33 @@ function _srmods_get_field_values($entity, $fields, $view_mode = 'default') {
     return $return;
 }
 
+/**
+* Utility function to return nice arrays of data for our template files to use.
+*/
 function _srmods_get_value_from_fc($entity, $field) {
-  //TODO BEGIN this block will be converted to a utility function that
-  //  retrieves, renders and returns the values of field collection data
   if ($field == 'field_employeeposition') {
-  $wrapper = entity_metadata_wrapper('node', $entity);
-  $items = field_get_items('node', $entity, 'field_employeeposition');
-  $value = array();
-  $position = array();
-  $position['count'] = (int) 1;
-  foreach($items as $id =>$itemid) {
-    $item = field_collection_field_get_entity($itemid);
-    
-    watchdog('srmods', '<pre>$item'
-      . print_r($item, 1)
-      . '</pre>');
-    $position[$id]['jobtitle'] = $item->field_jobtitle['und'][0]['safe_value'];
-    $position[$id]['phone'] = $item->field_workphone['und'][0]['safe_value'];
-  watchdog('srmods', '<pre>bobo '
-      . print_r($item->field_department['und']['0'], 1)
-      . '</pre>');
-    
-    $dept_title = $item->field_department['und']['0']['entity']->title;
-    $dept_url = $item->field_department['und']['0']['entity']->field_departmentwebsite['und'][0]['safe_value'];
-    $position[$id]['department'] = l($dept_title, $dept_url);
-    $position['count']++;
-  }
+    //$wrapper = entity_metadata_wrapper('node', $entity);
+    $items = field_get_items('node', $entity, 'field_employeeposition');
+    $value = array();
+    $position = array();
+    // count determines how many rows to span in the output template.
+    $position['count'] = (int) 1;
+    foreach($items as $id =>$itemid) {
+      $item = field_collection_field_get_entity($itemid);
+      // I burnt days trying to figure out the "right" way to do this with
+      // wrappers and field_collection_load yadda yadda...I finally gave up.
+      $position[$id]['jobtitle'] = $item->field_jobtitle['und'][0]['safe_value'];
+      $position[$id]['phone'] = $item->field_workphone['und'][0]['safe_value'];
+      // Provide the department title as a link.
+      $dept_title = $item->field_department['und']['0']['entity']->title;
+      $dept_url = $item->field_department['und']['0']['entity']->field_departmentwebsite['und'][0]['safe_value'];
+      $position[$id]['department'] = l($dept_title, $dept_url);
+      $position['count']++;
+    }
 
-  $value = $position;
-  watchdog('srmods', '<pre>$value'
-      . print_r($value, 1)
-      . '</pre>');
-  
-}
-  //TODO END block
+    $value = $position;
+
+  }
   return $value;
 }
 
@@ -191,32 +253,29 @@ function _srmods_employee_snippet($entity){
     $return = '<table style="width:100%;">';
     $return .= '<tr>';
 
-    $return .= '<th rowspan="'.$values['field_employeeposition']['count'].'" style="width:20%">';
+    $return .= '<th rowspan="'.$values['field_employeeposition']['count'].'" style="width:20%;" data-class="expand">';
     $return .= '<div class="icons-search-results-ct-employee">&nbsp;</div>';
-    $return .= $values['field_givenname'] . ' ' . $values['field_familyname'] . ' ' . $values['field_honoricsuffix'];
+    $return .= _srmods_employee_title($entity);
     $return .= '</th>';
     $return .= '</tr>';
     unset($values['field_employeeposition']['count']);
-   watchdog('srmods', '<pre>$values for table'
-      . print_r($values, 1)
-      . '</pre>');
     foreach($values['field_employeeposition'] as $id => $position){
       
       $return .= '<tr>';
       
-      $return .= '<td style="width:20%;">';
+      $return .= '<td style="width:25%;">';
       $return .= $position['jobtitle'];
       $return .= '</td>';
 
-      $return .= '<td style="width:20%;">';
+      $return .= '<td style="width:25%;">';
       $return .= $position['department'];
       $return .= '</td>';
 
-      $return .= '<td style="width:20%;">';
+      $return .= '<td style="width:15%;">';
       $return .= $position['phone'];
       $return .= '</td>';
 
-      $return .= '<td style="width:20%;">';
+      $return .= '<td style="width:15%;">';
       $return .= $values['field_email'];
       $return .= '</td>';
       
@@ -224,11 +283,6 @@ function _srmods_employee_snippet($entity){
     }
 
     $return .= '</table>';
-
-
-    watchdog('srmods', '<pre>$return '
-      . print_r($return, 1)
-      . '</pre>');
     
     return $return;
 
@@ -243,8 +297,12 @@ function _srmods_employee_snippet($entity){
 */
 function _srmods_employee_title($entity) {
   if($entity->type == 'employee'){
-    //watchdog('srmods', $entity->type . ' <pre>entity in _srmods_employee_title()' . print_r($entity, 1) . '</pre>');
-    
+  /*
+  watchdog('srmods',
+    '<pre>$entity: '
+    . print_r($entity,1)
+    .'</pre>');   
+  */
     $emp_wrapper = entity_metadata_wrapper('node', $entity);
     $givenname = $emp_wrapper->field_givenname->value();
     $familyname = $emp_wrapper->field_familyname->value();
@@ -254,8 +312,7 @@ function _srmods_employee_title($entity) {
     if(!empty($suffix)){
       $title .= ' ' . $suffix;
     }
-
-    //watchdog('srmods', '<pre>emp_wrapper in _srmods_employee_title()' . print_r($emp_wrapper, 1) . '</pre>');
+    $title = l($title, 'node/' . $entity->nid);
 
     return $title;
   }else {
@@ -273,4 +330,3 @@ function srmods_entity_info_alter(&$entity_info) {
       'custom settings' => FALSE,
       );
 }
-
