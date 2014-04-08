@@ -103,63 +103,59 @@ function _srmods_department_snippet($entity) {
       $icon = '<div>Default, no icon yet.</div>';
     }
     
-    //$output = field_view_field('node', $node, 'field_name');
     $dept_name = l($entity->title, 'node/' . $entity->nid);
+    $title .= $dept_name;
+
     $dept_summary = render(field_view_field(
-      'node', 
-      $entity, 
-      'field_departmentsummary', 
-      'srmods_view_mode'));
+      'node', $entity, 'field_departmentsummary', 'srmods_view_mode'));
     
     $dept_email = render(field_view_field(
-      'node', 
-      $entity, 
-      'field_departmentemail', 
-      'srmods_view_mode'));
+      'node', $entity, 'field_departmentemail', 'srmods_view_mode'));
     
     $dept_phone = render(field_view_field(
-      'node', 
-      $entity, 
-      'field_departmentphonenumber', 
-      'srmods_view_mode'));
+      'node', $entity, 'field_departmentphonenumber', 'srmods_view_mode'));
 
     $dept_url = render(field_view_field(
-      'node', 
-      $entity, 
-      'field_departmentwebsite', 
-      'srmods_view_mode'));
+      'node', $entity, 'field_departmentwebsite', 'srmods_view_mode'));
 
     $dept_location = render(field_view_field(
-      'node',
-      $entity,
-      'field_location',
-      'srmods_view_mode'));
+      'node', $entity,'field_location','srmods_view_mode'));
 
     $dept_web = l($entity->title . ' website', $dept_url);
 
-    $return = $icon . $dept_name .  $dept_summary . $dept_email . $dept_phone . $dept_web . $dept_location;
+    $return = $icon . $dept_name_display .  $dept_summary . $dept_email . $dept_phone . $dept_web . $dept_location;
     
-    $return = '<div class="fifths">';
-    $return .= '<div class="one-fifth-first">';
-    $return .= $icon . $dept_name;
-    $return .= '</div>'; // end one-fifth-first
-    $return .= '<div class="four-fifths-second">';
+    $return = '<div class="result general">';
+    
+    $return .= '<div class="icon">';
+    $return .= $icon;
+    $return .= '</div>'; // end icon
+    
+    $return .= '<div class="title">';
+    $return .= $title;
+    $return .= '</div>'; // end title
+    
+    $return .= '<div class="summary">';
     $return .= $dept_summary;
-    $return .= '</div>';
-    $return .= '</div>'; // end fifths
-    
-    $return .= '<div class="fifths">';
-    $return .= '<div class="one-fifth-first">&nbsp;</div>';
-    $return .= '<div class="one-fifth-second">' . $dept_phone. '</div>';
-    $return .= '<div class="one-fifth-third">' . $dept_email . '</div>';
-    $return .= '<div class="one-fifth-fourth">' . $dept_web . '</div>';
-    $return .= '<div class="one-fifth-fifth">' . $dept_location . '</div>';
-    $return .= '</div>'; // end fifths
+    $return .= '</div>'; // end summary
+ 
 
+    $return .= '<div class="dept-details">';
+    $return .= '<div class="first">' . $dept_web . '</div>';
+    $return .= '<div class="second">' . $dept_location . '</div>';
+    $return .= '<div class="third">' . $dept_phone . '</div>';
+    $return .= '<div class="fourth">' . $dept_email . '</div>';
+    $return .= '</div>'; // end dept-details
+
+    $return .= '</div>'; // end result
+    
+
+    /*
     watchdog('srmods', 
-      '<pre>$return '
+      '$return '
       . print_r($return, 1)
-      . '</pre>');
+      . '');
+    */
     return $return;
 
   }else{
@@ -207,8 +203,6 @@ function _srmods_get_value_from_fc($entity, $field) {
     $items = field_get_items('node', $entity, 'field_employeeposition');
     $value = array();
     $position = array();
-    // count determines how many rows to span in the output template.
-    $position['count'] = (int) 1;
     foreach($items as $id =>$itemid) {
       $item = field_collection_field_get_entity($itemid);
       // I burnt days trying to figure out the "right" way to do this with
@@ -219,7 +213,6 @@ function _srmods_get_value_from_fc($entity, $field) {
       $dept_title = $item->field_department['und']['0']['entity']->title;
       $dept_url = $item->field_department['und']['0']['entity']->field_departmentwebsite['und'][0]['safe_value'];
       $position[$id]['department'] = l($dept_title, $dept_url);
-      $position['count']++;
     }
 
     $value = $position;
@@ -245,45 +238,45 @@ function _srmods_employee_snippet($entity){
     // Render the fields
     $values = _srmods_get_field_values($entity, $fields, 'srmods_view_mode');
     
-
+    $return  = '<div class="result">';
     
-
+    $return .= '<div class="icons-search-results-ct-employee icon">&nbsp;</div>';
     
-
-    $return = '<table style="width:100%;">';
-    $return .= '<tr>';
-
-    $return .= '<th rowspan="'.$values['field_employeeposition']['count'].'" style="width:20%;" data-class="expand">';
-    $return .= '<div class="icons-search-results-ct-employee">&nbsp;</div>';
+    $return .= '<div class="title">';
     $return .= _srmods_employee_title($entity);
-    $return .= '</th>';
-    $return .= '</tr>';
-    unset($values['field_employeeposition']['count']);
-    foreach($values['field_employeeposition'] as $id => $position){
-      
-      $return .= '<tr>';
-      
-      $return .= '<td style="width:25%;">';
-      $return .= $position['jobtitle'];
-      $return .= '</td>';
-
-      $return .= '<td style="width:25%;">';
-      $return .= $position['department'];
-      $return .= '</td>';
-
-      $return .= '<td style="width:15%;">';
-      $return .= $position['phone'];
-      $return .= '</td>';
-
-      $return .= '<td style="width:15%;">';
-      $return .= $values['field_email'];
-      $return .= '</td>';
-      
-    $return .= '</tr>';
-    }
-
-    $return .= '</table>';
+    $return .= '</div>'; // end title
     
+    $return .= '<div class="positions">';
+    foreach($values['field_employeeposition'] as $id => $position){
+      $return .= '<div class="position">';
+
+      $return .= '<div class="first">';
+      $return .= $position['jobtitle'];
+      $return .= '</div>';
+
+      $return .= '<div class="second">';
+      $return .= $position['department'];
+      $return .= '</div>';
+
+      $return .= '<div class="third">';
+      $return .= $position['phone'];
+      $return .= '</div>';
+
+      $return .= '<div class="fourth">';
+      $return .= $values['field_email'];
+      $return .= '</div>';
+      
+      $return .= '</div>'; // end position
+    }
+    $return .= '</div>'; // end positions
+    $return .= '</div>'; // end result
+    
+    
+  watchdog('srmods',
+    '$return: '
+    . print_r($return,1)
+    .'');   
+
     return $return;
 
   }else {
