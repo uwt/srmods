@@ -16,6 +16,7 @@
  */
 function srmods_apachesolr_index_document_build(ApacheSolrDocument $document, $entity, $entity_type, $env_id) {
   // Add the rendered-to-html string that will replace the snippet.
+  // Attempt to do this per-content-type
   if(function_exists('_srmods_' . $entity->type . '_snippet')) {
     $func = '_srmods_' . $entity->type . '_snippet';
     $rendered_snippet = $func($entity);
@@ -23,7 +24,10 @@ function srmods_apachesolr_index_document_build(ApacheSolrDocument $document, $e
     if($rendered_snippet){
       $document->setMultiValue('sm_rendered_snippet', $rendered_snippet);
     }
+  } else { // otherwiser run the default
+    $document->setMultiValue('sm_rendered_snippet', _srmods_default_snippet($entity));
   }
+
   // Add the rendered string that will replacde the title
   
   if(function_exists('_srmods_' . $entity->type . '_title')) {
@@ -67,22 +71,39 @@ function srmods_apachesolr_process_results(&$results, DrupalSolrQueryInterface $
         $results[$id]['title'] = $result['fields']['sm_rendered_title'][0];
         $results[$id]['snippet'] = $result['fields']['sm_rendered_snippet'][0];
         break;
-
+    default:
+        $results[$id]['snippet'] = $result['fields']['sm_rendered_snippet'][0];
     }
   }
 }
 
+/**
+* Render the default html snippet. A content type specific
+* function doesn't exist.
+*/
+function _srmods_default_snippet ($entity) {
+    $summary = render(field_view_field('node', $entity, 'body', 'srmods_view_mode'));
+    $section = render(field_view_field('node', $entity, 'field_site', 'srmods_view_mode'));
+    $output = $summary . $section;
+    watchdog('srmods', 
+      '<pre>_srmods_default_snippet()'
+      . print_r(l($entity->title, 'node/' . $entity->nid) . $output, 1)
+      . '</pre>');
+    
+  return $output;
+}
 
 /**
 * Render the html snippet for the Department content type.
 */
 function _srmods_department_snippet($entity) {
   if($entity->type == 'department'){
+    /*
     watchdog('srmods', 
       '<pre>$entity ' . $entity->title
-      . print_r($entity, 1)
+      . print_r($entity->body['und'][0]['safe_summary'])
       . '</pre>');
-    
+    */
     $wrapper = entity_metadata_wrapper('node', $entity);
     /*
     watchdog('srmods', 
@@ -139,6 +160,11 @@ function _srmods_department_snippet($entity) {
     $return .= $dept_summary;
     $return .= '</div>'; // end summary
  
+ 
+    watchdog('srmods', 
+      'dept link '
+      . print_r($dept_web, 1)
+      . '');
 
     $return .= '<div class="dept-details">';
     $return .= '<div class="first">' . $dept_web . '</div>';
@@ -305,7 +331,16 @@ function _srmods_employee_title($entity) {
     if(!empty($suffix)){
       $title .= ' ' . $suffix;
     }
-    $title = l($title, 'node/' . $entity->nid);
+
+    $options = array();
+    $options['absolute'] = TRUE;
+    $title = l($title, $entity->nid, $options);
+    
+    
+  watchdog('srmods',
+    '<pre>employee title link: '
+    . print_r($title,1)
+    .'</pre>');   
 
     return $title;
   }else {
@@ -320,6 +355,6 @@ function _srmods_employee_title($entity) {
 function srmods_entity_info_alter(&$entity_info) {
   $entity_info['node']['view modes']['srmods_view_mode'] = array(
       'label' => t('Search Results Modified'),
-      'custom settings' => FALSE,
+      'custom settings' => TRUE,
       );
 }
