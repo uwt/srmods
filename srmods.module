@@ -34,13 +34,19 @@ function srmods_apachesolr_index_document_build(ApacheSolrDocument $document, $e
   if(function_exists('_srmods_' . $entity->type . '_title')) {
     $func = '_srmods_' . $entity->type . '_title';
     $rendered_title = $func($entity);
-
-    if($rendered_title){
+    if($rendered_title){// If the title has been rendered by a custom function
       $document->setMultiValue('sm_rendered_title', $rendered_title);
-    }else {
-      $options = array('absolute' => TRUE);
-      $document->setMultiValue('sm_rendered_title', l($entity->title, 'node/' . $entity->nid));  
     }
+  }else {// Else use the default title
+    $options = array();
+    $options['absolute'] = TRUE;
+    $options['external'] = TRUE;
+    global $base_url;
+    $url = $base_url . base_path();
+    watchdog('srmods', 'testing url: ' . $url);
+    $title_link = l($entity->title, $url . 'node/' . $entity->nid, $options);
+    $document->setMultiValue('sm_rendered_title', l($entity->title, $title_link));
+    watchdog('srmods', 'default title:' . $title_link);
   }
   // Add the users name to the document.
   // You might not need to write code here.
@@ -168,11 +174,12 @@ function _srmods_department_snippet($entity) {
     $return .= $dept_summary;
     $return .= '</div>'; // end summary
  
- 
+    /*
     watchdog('srmods', 
       'dept link '
       . print_r($dept_web, 1)
       . '');
+    */
 
     $return .= '<div class="dept-details">';
     $return .= '<div class="first">' . $dept_web . '</div>';
@@ -270,6 +277,8 @@ function _srmods_employee_snippet($entity){
     $fields[] = 'field_employeeposition';
     
     // Render the fields
+    // @TODO this might be overkill. I think we might be able to just do
+    // render(field_view_field());
     $values = _srmods_get_field_values($entity, $fields, 'srmods_view_mode');
     
     $return  = '<div class="result">';
@@ -305,12 +314,12 @@ function _srmods_employee_snippet($entity){
     $return .= '</div>'; // end positions
     $return .= '</div>'; // end result
     
-    
+  /*  
   watchdog('srmods',
     '$return: '
     . print_r($return,1)
     .'');   
-
+  */
     return $return;
 
   }else {
