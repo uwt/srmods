@@ -2,8 +2,9 @@
 
 /**
 * @file
-* Add custom fields to the SOLR index. Query those fields. Display those
-*   fields in the search results.
+* Add custom fields to the SOLR. 
+* Query those fileds. 
+* Display those fields in the search results.
 *
 * We use this technique as a more performant and clearner way than
 *   template.php preprocessing and node_loading().
@@ -20,7 +21,7 @@ function srmods_apachesolr_index_document_build(ApacheSolrDocument $document, $e
   if(function_exists('_srmods_' . $entity->type . '_snippet')) {
     $func = '_srmods_' . $entity->type . '_snippet';
     $rendered_snippet = $func($entity);
-    
+
     if($rendered_snippet){
       $document->setMultiValue('sm_rendered_snippet', $rendered_snippet);
     }
@@ -29,15 +30,21 @@ function srmods_apachesolr_index_document_build(ApacheSolrDocument $document, $e
   }
 
   // Add the rendered string that will replacde the title
-  
+
   if(function_exists('_srmods_' . $entity->type . '_title')) {
     $func = '_srmods_' . $entity->type . '_title';
     $rendered_title = $func($entity);
-    
+
     if($rendered_title){
       $document->setMultiValue('sm_rendered_title', $rendered_title);
+    }else {
+      $options = array('absolute' => TRUE);
+      $document->setMultiValue('sm_rendered_title', l($entity->title, 'node/' . $entity->nid));  
     }
   }
+  // Add the users name to the document.
+  // You might not need to write code here.
+  // @see https://drupal.org/node/1965932
 }
 
 /**
@@ -123,8 +130,9 @@ function _srmods_department_snippet($entity) {
     default:
       $icon = '<div>Default, no icon yet.</div>';
     }
-    
-    $dept_name = l($entity->title, 'node/' . $entity->nid);
+    $options = array();
+    $options['absolute'] = TRUE;
+    $dept_name = l($entity->title, 'node/' . $entity->nid, $options);
     $title .= $dept_name;
 
     $dept_summary = render(field_view_field(
@@ -140,7 +148,7 @@ function _srmods_department_snippet($entity) {
       'node', $entity, 'field_departmentwebsite', 'srmods_view_mode'));
 
     $dept_location = render(field_view_field(
-      'node', $entity,'field_location','srmods_view_mode'));
+      'node', $entity, 'field_location', 'srmods_view_mode'));
 
     $dept_web = l($entity->title . ' website', $dept_url);
 
@@ -334,7 +342,7 @@ function _srmods_employee_title($entity) {
 
     $options = array();
     $options['absolute'] = TRUE;
-    $title = l($title, $entity->nid, $options);
+    $title = l($title, 'node/' . $entity->nid, $options);
     
     
   watchdog('srmods',
