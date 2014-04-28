@@ -1,14 +1,14 @@
 <?php
 
 /**
-* @file
-* Add custom fields to the SOLR. 
-* Query those fileds. 
-* Display those fields in the search results.
-*
-* We use this technique as a more performant and clearner way than
-*   template.php preprocessing and node_loading().
-*/
+ * @file
+ * Add custom fields to the SOLR. 
+ * Query those fileds. 
+ * Display those fields in the search results.
+ *
+ * We use this technique as a more performant and clearner way than
+ *   template.php preprocessing and node_loading().
+ */
 
 /**
  * Implements hook_apachesolr_index_document_build().
@@ -43,10 +43,10 @@ function srmods_apachesolr_index_document_build(ApacheSolrDocument $document, $e
     $options['external'] = TRUE;
     global $base_url;
     $url = $base_url . base_path();
-    watchdog('srmods', 'testing url: ' . $url);
+    //watchdog('srmods', 'testing url: ' . $url);
     $title_link = l($entity->title, $url . 'node/' . $entity->nid, $options);
     $document->setMultiValue('sm_rendered_title', l($entity->title, $title_link));
-    watchdog('srmods', 'default title:' . $title_link);
+    //watchdog('srmoads', 'default ct title: ' . $title_link);
   }
   // Add the users name to the document.
   // You might not need to write code here.
@@ -65,11 +65,11 @@ function srmods_apachesolr_query_alter($query) {
 
 
 /**
-* Implementation of hook_apache_solr_process_results().
-*
-* Alter (theme-esque) the results as they are being displayed.
-*   Essentially, setting the title and snippet.
-*/
+ * Implementation of hook_apache_solr_process_results().
+ *
+ * Alter (theme-esque) the results as they are being displayed.
+ *   Essentially, setting the title and snippet.
+ */
 function srmods_apachesolr_process_results(&$results, DrupalSolrQueryInterface $query) {
   foreach ($results as $id => $result) {
 
@@ -84,57 +84,58 @@ function srmods_apachesolr_process_results(&$results, DrupalSolrQueryInterface $
         $results[$id]['title'] = $result['fields']['sm_rendered_title'][0];
         $results[$id]['snippet'] = $result['fields']['sm_rendered_snippet'][0];
         break;
-    default:
+      default:
         $results[$id]['snippet'] = $result['fields']['sm_rendered_snippet'][0];
     }
   }
 }
 
 /**
-* Render the default html snippet. A content type specific
-* function doesn't exist.
-*/
+ * Render the default html snippet. A content type specific
+ * function doesn't exist.
+ */
 function _srmods_default_snippet ($entity) {
-    $summary = render(field_view_field('node', $entity, 'body', 'srmods_view_mode'));
-    $section = render(field_view_field('node', $entity, 'field_site', 'srmods_view_mode'));
-    $output = $summary . $section;
-    watchdog('srmods', 
-      '<pre>_srmods_default_snippet()'
-      . print_r(l($entity->title, 'node/' . $entity->nid) . $output, 1)
+  watchdog('srmods', 
+      '<pre>'.$entity->title.': $entity: '
+      . print_r($entity, 1)
       . '</pre>');
-    
+
+  $summary = render(field_view_field('node', $entity, 'body', 'srmods_view_mode'));
+  $section = render(field_view_field('node', $entity, 'field_site', 'srmods_view_mode'));
+  $output = strip_tags($summary) . $section;
+
   return $output;
 }
 
 /**
-* Render the html snippet for the Department content type.
-*/
+ * Render the html snippet for the Department content type.
+ */
 function _srmods_department_snippet($entity) {
   if($entity->type == 'department'){
     /*
-    watchdog('srmods', 
-      '<pre>$entity ' . $entity->title
-      . print_r($entity->body['und'][0]['safe_summary'])
-      . '</pre>');
-    */
+       watchdog('srmods', 
+       '<pre>$entity ' . $entity->title
+       . print_r($entity->body['und'][0]['safe_summary'])
+       . '</pre>');
+     */
     $wrapper = entity_metadata_wrapper('node', $entity);
     /*
-    watchdog('srmods', 
-      '<pre>$departmenttype in _srmods_department_snippet()'
-      . print_r($wrapper->field_departmenttype->value(), 1)
-      . '</pre>');
-    */
+       watchdog('srmods', 
+       '<pre>$departmenttype in _srmods_department_snippet()'
+       . print_r($wrapper->field_departmenttype->value(), 1)
+       . '</pre>');
+     */
     switch($wrapper->field_departmenttype->value()) {
-    
-    case 'academic-programs':
-      $icon = '<div class="icons-mortarboard type-icon"></div>';
-    break;
-    
-    case 'academic-support':
-      $icon = '<div class="icons-support32 type-icon"></div>';
-    break;
-    default:
-      $icon = '<div>Default, no icon yet.</div>';
+
+      case 'academic-programs':
+        $icon = '<div class="icons-mortarboard type-icon"></div>';
+        break;
+
+      case 'academic-support':
+        $icon = '<div class="icons-support32 type-icon"></div>';
+        break;
+      default:
+        $icon = '<div>Default, no icon yet.</div>';
     }
     $options = array();
     $options['absolute'] = TRUE;
@@ -142,44 +143,44 @@ function _srmods_department_snippet($entity) {
     $title .= $dept_name;
 
     $dept_summary = render(field_view_field(
-      'node', $entity, 'field_departmentsummary', 'srmods_view_mode'));
-    
+          'node', $entity, 'field_departmentsummary', 'srmods_view_mode'));
+
     $dept_email = render(field_view_field(
-      'node', $entity, 'field_departmentemail', 'srmods_view_mode'));
-    
+          'node', $entity, 'field_departmentemail', 'srmods_view_mode'));
+
     $dept_phone = render(field_view_field(
-      'node', $entity, 'field_departmentphonenumber', 'srmods_view_mode'));
+          'node', $entity, 'field_departmentphonenumber', 'srmods_view_mode'));
 
     $dept_url = render(field_view_field(
-      'node', $entity, 'field_departmentwebsite', 'srmods_view_mode'));
+          'node', $entity, 'field_departmentwebsite', 'srmods_view_mode'));
 
     $dept_location = render(field_view_field(
-      'node', $entity, 'field_location', 'srmods_view_mode'));
+          'node', $entity, 'field_location', 'srmods_view_mode'));
 
     $dept_web = l($entity->title . ' website', $dept_url);
 
     $return = $icon . $dept_name_display .  $dept_summary . $dept_email . $dept_phone . $dept_web . $dept_location;
-    
+
     $return = '<div class="result general">';
-    
+
     $return .= '<div class="icon">';
     $return .= $icon;
     $return .= '</div>'; // end icon
-    
+
     $return .= '<div class="title">';
     $return .= $title;
     $return .= '</div>'; // end title
-    
+
     $return .= '<div class="summary">';
     $return .= $dept_summary;
     $return .= '</div>'; // end summary
- 
+
     /*
-    watchdog('srmods', 
-      'dept link '
-      . print_r($dept_web, 1)
-      . '');
-    */
+       watchdog('srmods', 
+       'dept link '
+       . print_r($dept_web, 1)
+       . '');
+     */
 
     $return .= '<div class="dept-details">';
     $return .= '<div class="first">' . $dept_web . '</div>';
@@ -189,14 +190,14 @@ function _srmods_department_snippet($entity) {
     $return .= '</div>'; // end dept-details
 
     $return .= '</div>'; // end result
-    
+
 
     /*
-    watchdog('srmods', 
-      '$return '
-      . print_r($return, 1)
-      . '');
-    */
+       watchdog('srmods', 
+       '$return '
+       . print_r($return, 1)
+       . '');
+     */
     return $return;
 
   }else{
@@ -205,39 +206,39 @@ function _srmods_department_snippet($entity) {
 }
 
 /**
-* Helper function to process/render/retrieve values from fields.
-*
-* @param $entity Array A complete entity
-* @param $fields Array Field system names to render
-* @param $view_mode String The view mode to use, defaults to 'default'
-*
-* @return Array An array of rendered values.
-*/
+ * Helper function to process/render/retrieve values from fields.
+ *
+ * @param $entity Array A complete entity
+ * @param $fields Array Field system names to render
+ * @param $view_mode String The view mode to use, defaults to 'default'
+ *
+ * @return Array An array of rendered values.
+ */
 function _srmods_get_field_values($entity, $fields, $view_mode = 'default') {
 
-    $return = array();
-    foreach($fields as $field) {
+  $return = array();
+  foreach($fields as $field) {
     $field_info = field_info_field($field);
     $field_type = $field_info['type'];
-    
+
     //watchdog('srmods', '<pre>$field_type: ' . $field . ' = '
-      //. print_r($field_type, 1)
-      //. '</pre>');
+    //. print_r($field_type, 1)
+    //. '</pre>');
 
     if($field_type == 'text') {
 
       $return[$field] = render(field_view_field('node', $entity, $field, $view_mode));
 
     } else if ($field_type == 'field_collection') {
-     $return[$field] = _srmods_get_value_from_fc($entity, $field);
-      }
+      $return[$field] = _srmods_get_value_from_fc($entity, $field);
     }
-    return $return;
+  }
+  return $return;
 }
 
 /**
-* Utility function to return nice arrays of data for our template files to use.
-*/
+ * Utility function to return nice arrays of data for our template files to use.
+ */
 function _srmods_get_value_from_fc($entity, $field) {
   if ($field == 'field_employeeposition') {
     //$wrapper = entity_metadata_wrapper('node', $entity);
@@ -264,8 +265,8 @@ function _srmods_get_value_from_fc($entity, $field) {
 
 
 /**
-* Render the snippet for the Employee content type
-*/
+ * Render the snippet for the Employee content type
+ */
 function _srmods_employee_snippet($entity){
   if($entity->type == 'employee') {
     // Set up the fields for display in the search results.
@@ -275,20 +276,20 @@ function _srmods_employee_snippet($entity){
     $fields[] = 'field_honorificsuffix';
     $fields[] = 'field_email';
     $fields[] = 'field_employeeposition';
-    
+
     // Render the fields
     // @TODO this might be overkill. I think we might be able to just do
     // render(field_view_field());
     $values = _srmods_get_field_values($entity, $fields, 'srmods_view_mode');
-    
+
     $return  = '<div class="result">';
-    
+
     $return .= '<div class="icons-search-results-ct-employee icon">&nbsp;</div>';
-    
+
     $return .= '<div class="title">';
     $return .= _srmods_employee_title($entity);
     $return .= '</div>'; // end title
-    
+
     $return .= '<div class="positions">';
     foreach($values['field_employeeposition'] as $id => $position){
       $return .= '<div class="position">';
@@ -308,18 +309,18 @@ function _srmods_employee_snippet($entity){
       $return .= '<div class="fourth">';
       $return .= $values['field_email'];
       $return .= '</div>';
-      
+
       $return .= '</div>'; // end position
     }
     $return .= '</div>'; // end positions
     $return .= '</div>'; // end result
-    
-  /*  
-  watchdog('srmods',
-    '$return: '
-    . print_r($return,1)
-    .'');   
-  */
+
+    /*  
+        watchdog('srmods',
+        '$return: '
+        . print_r($return,1)
+        .'');   
+     */
     return $return;
 
   }else {
@@ -329,16 +330,16 @@ function _srmods_employee_snippet($entity){
 
 
 /**
-* Render the title for the Employee content type
-*/
+ * Render the title for the Employee content type
+ */
 function _srmods_employee_title($entity) {
   if($entity->type == 'employee'){
-  /*
-  watchdog('srmods',
-    '<pre>$entity: '
-    . print_r($entity,1)
-    .'</pre>');   
-  */
+    /*
+       watchdog('srmods',
+       '<pre>$entity: '
+       . print_r($entity,1)
+       .'</pre>');   
+     */
     $emp_wrapper = entity_metadata_wrapper('node', $entity);
     $givenname = $emp_wrapper->field_givenname->value();
     $familyname = $emp_wrapper->field_familyname->value();
@@ -352,13 +353,13 @@ function _srmods_employee_title($entity) {
     $options = array();
     $options['absolute'] = TRUE;
     $title = l($title, 'node/' . $entity->nid, $options);
-    
-    
-  watchdog('srmods',
-    '<pre>employee title link: '
-    . print_r($title,1)
-    .'</pre>');   
 
+    /*  
+        watchdog('srmods',
+        '<pre>employee title link: '
+        . print_r($title,1)
+        .'</pre>');   
+     */
     return $title;
   }else {
     return FALSE;
@@ -367,8 +368,8 @@ function _srmods_employee_title($entity) {
 
 
 /**
-* Add an additional view mode.
-*/
+ * Add an additional view mode.
+ */
 function srmods_entity_info_alter(&$entity_info) {
   $entity_info['node']['view modes']['srmods_view_mode'] = array(
       'label' => t('Search Results Modified'),
