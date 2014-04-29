@@ -17,25 +17,28 @@
  */
 function srmods_apachesolr_index_document_build(ApacheSolrDocument $document, $entity, $entity_type, $env_id) {
   // Add the rendered-to-html string that will replace the snippet.
-  // Attempt to do this per-content-type
+  // Attempt to do this per-content-type by looking for a function
+  // named '_srmods_ENTITYTYPE_snippet'
   if(function_exists('_srmods_' . $entity->type . '_snippet')) {
     $func = '_srmods_' . $entity->type . '_snippet';
     $rendered_snippet = $func($entity);
-
+    // If the function returns something
     if($rendered_snippet){
-      $document->setMultiValue('sm_rendered_snippet', $rendered_snippet);
+      $document->setField('ts_rendered_snippet', $rendered_snippet);
     }
-  } else { // otherwiser run the default
-    $document->setMultiValue('sm_rendered_snippet', _srmods_default_snippet($entity));
+  } else { //  Nope, no custom function. Use the default snippet function.
+    $document->setField('ts_rendered_snippet', _srmods_default_snippet($entity));
   }
 
-  // Add the rendered string that will replacde the title
+  // Add the rendered-to-html string that will replace the title.
+  // Attempt to do this per-content-type by looking for a function
+  // named '_srmods_ENTITYTYPE_title'
 
   if(function_exists('_srmods_' . $entity->type . '_title')) {
     $func = '_srmods_' . $entity->type . '_title';
     $rendered_title = $func($entity);
     if($rendered_title){// If the title has been rendered by a custom function
-      $document->setMultiValue('sm_rendered_title', $rendered_title);
+      $document->setField('ts_rendered_title', $rendered_title);
     }
   }else {// Else use the default title
     $options = array();
@@ -43,9 +46,9 @@ function srmods_apachesolr_index_document_build(ApacheSolrDocument $document, $e
     $options['external'] = TRUE;
     global $base_url;
     $url = $base_url . base_path();
-    //watchdog('srmods', 'testing url: ' . $url);
+    //watchdog('srmods', 'default title url: ' . $url);
     $title_link = l($entity->title, $url . 'node/' . $entity->nid, $options);
-    $document->setMultiValue('sm_rendered_title', l($entity->title, $title_link));
+    $document->setMultiValue('ts_rendered_title', l($entity->title, $title_link));
     //watchdog('srmoads', 'default ct title: ' . $title_link);
   }
   // Add the users name to the document.
@@ -59,8 +62,12 @@ function srmods_apachesolr_index_document_build(ApacheSolrDocument $document, $e
  * Add the newly indexed fields from above to the query result.
  */
 function srmods_apachesolr_query_alter($query) {
-  $query->addParams(array('fl' => array('sm_rendered_title')));
-  $query->addParams(array('fl' => array('sm_rendered_snippet')));
+  $params = array();
+  $params['fl'][] = 'ts_rendered_title';
+  $params['fl'][] = 'ts_rendered_snippet';
+  $query->addParams($params);
+  //$query->addParams(array('fl' => array('ts_rendered_title')));
+  //$query->addParams(array('fl' => array('ts_rendered_snippet')));
 }
 
 
@@ -77,15 +84,15 @@ function srmods_apachesolr_process_results(&$results, DrupalSolrQueryInterface $
     switch($result['bundle']){
 
       case 'department':
-        $results[$id]['snippet'] = $result['fields']['sm_rendered_snippet'][0];
+        $results[$id]['snippet'] = $result['fields']['ts_rendered_snippet'];
         break;
 
       case 'employee':
-        $results[$id]['title'] = $result['fields']['sm_rendered_title'][0];
-        $results[$id]['snippet'] = $result['fields']['sm_rendered_snippet'][0];
+        $results[$id]['title'] = $result['fields']['ts_rendered_title'];
+        $results[$id]['snippet'] = $result['fields']['ts_rendered_snippet'];
         break;
       default:
-        $results[$id]['snippet'] = $result['fields']['sm_rendered_snippet'][0];
+        $results[$id]['snippet'] = $result['fields']['ts_rendered_snippet'];
     }
   }
 }
