@@ -79,7 +79,7 @@ function srmods_apachesolr_query_alter($query) {
  */
 function srmods_apachesolr_process_results(&$results, DrupalSolrQueryInterface $query) {
   foreach ($results as $id => $result) {
-
+  //dpm($result, '$result');
     //dpm($result, $result['bundle']);
     switch($result['bundle']){
 
@@ -382,4 +382,14 @@ function srmods_entity_info_alter(&$entity_info) {
       'label' => t('Search Results Modified'),
       'custom settings' => TRUE,
       );
+}
+
+/**
+ * Assigns a readable name to your custom solr field
+ *
+ * @param array $map
+ */
+function srmods_apachesolr_field_name_map_alter(array &$map) {
+  $map['ts_rendered_snippet'] = t('Rendered Snippet (custom)');
+  $map['ts_rendered_title'] = t('Rendered Title (custom)');
 }
