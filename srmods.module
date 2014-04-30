@@ -218,6 +218,24 @@ function _srmods_department_snippet($entity) {
 }
 
 /**
+ * Render the html snippet for the Page content type.
+ */
+function _srmods_page_snippet($entity){
+  $output = '';
+
+  $output .= '<div class="icon">';
+  $output .= '[ICON]';
+  $output .= '</div>';
+
+  $output .= '<div class="title">';
+  $output .= '[TEASER/SUMMARY TEXT TEASER/SUMMARY TEXT TEASER/SUMMARY TEXT TEASER/SUMMARY TEXT TEASER/SUMMARY TEXT]';
+  $output .= '</div>';
+
+  return $output;
+}
+
+
+/**
  * Helper function to process/render/retrieve values from fields.
  *
  * @param $entity Array A complete entity
