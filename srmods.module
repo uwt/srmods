@@ -67,12 +67,10 @@ function srmods_apachesolr_query_alter($query) {
   $params['fl'][] = 'ts_rendered_title';
   $params['fl'][] = 'ts_rendered_snippet';
   $query->addParams($params);
+
   // Changing the default query parameter from 'or' to 'and'
   // @see http://wiki.apache.org/solr/DisMaxQParserPlugin#mm_.28Minimum_.27Should.27_Match.29
   $query->replaceParam('mm', '100%');
-  
-  //$query->addParams(array('fl' => array('ts_rendered_title')));
-  //$query->addParams(array('fl' => array('ts_rendered_snippet')));
 }
 
 
