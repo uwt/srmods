@@ -19,6 +19,7 @@ function srmods_apachesolr_index_document_build(ApacheSolrDocument $document, $e
   // Add the rendered-to-html string that will replace the snippet.
   // Attempt to do this per-content-type by looking for a function
   // named '_srmods_ENTITYTYPE_snippet'
+  watchdog('srmods', $entity->type .': '. $entity->title);
   if(function_exists('_srmods_' . $entity->type . '_snippet')) {
     $func = '_srmods_' . $entity->type . '_snippet';
     $rendered_snippet = $func($entity);
@@ -112,7 +113,11 @@ function _srmods_default_snippet ($entity) {
 
   $summary = render(field_view_field('node', $entity, 'body', 'srmods_view_mode'));
   $section = render(field_view_field('node', $entity, 'field_site', 'srmods_view_mode'));
-  $output = strip_tags($summary) . $section;
+  
+  $output = '';
+  $output .= '<div class="summary">';
+  $output .= strip_tags($summary) . $section;
+  $output .= '</div>';
 
   return $output;
 }
@@ -217,7 +222,7 @@ function _srmods_department_snippet($entity) {
 
 /**
  * Render the html snippet for the Page content type.
- */
+ 
 function _srmods_page_snippet($entity){
   $output = '';
 
@@ -231,7 +236,7 @@ function _srmods_page_snippet($entity){
 
   return $output;
 }
-
+*/
 
 /**
  * Helper function to process/render/retrieve values from fields.
