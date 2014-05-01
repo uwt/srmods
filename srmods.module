@@ -419,3 +419,21 @@ function srmods_apachesolr_field_name_map_alter(array &$map) {
   $map['ts_rendered_snippet'] = t('Rendered Snippet (custom)');
   $map['ts_rendered_title'] = t('Rendered Title (custom)');
 }
+
+
+/**
+ * Implements hook_form_BASE_FORM_ID_alter().
+ */
+function srmods_form_facetapi_multiselect_form_alter(&$form, &$form_state) {
+  // Add the JavaScript and CSS for the library itself. This assumes you are
+  // using the Libraries module (http://drupal.org/project/libraries) and that
+  // you've put the external library in sites/all/libraries/jquery.multiselect.
+  $path = libraries_get_path('jquery.multiselect');
+  $form['#attached']['js'][] = $path . '/jquery.multiselect.min.js';
+  $form['#attached']['css'][] = $path . '/jquery.multiselect.css';
+
+  // Add a custom JavaScript file which will trigger the jQuery MultiSelect
+  // widget on the correct form elements.
+  $form['#attached']['js'][] = drupal_get_path('module', 'srmods') . '/srmods.facetapi.multiselect.js';
+  $form['submit']['#value'] = t('Apply filters');
+}
