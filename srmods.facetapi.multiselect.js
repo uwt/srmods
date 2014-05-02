@@ -5,6 +5,10 @@ Drupal.behaviors.srmodsFacetApiMultiselectWidget = {
       // Attach the behavior to it.
       jQuery(this).multiselect({
         // Pass in whatever array of options you need here.
+         position: {
+          my: 'left bottom',
+          at: 'left top'
+        }
       });
     });
   }
