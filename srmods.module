@@ -435,7 +435,21 @@ function srmods_form_facetapi_multiselect_form_alter(&$form, &$form_state) {
   // Add a custom JavaScript file which will trigger the jQuery MultiSelect
   // widget on the correct form elements.
   $form['#attached']['js'][] = drupal_get_path('module', 'srmods') . '/srmods.facetapi.multiselect.js';
+  // Modify the submit button value
   $form['submit']['#value'] = t('Apply filters');
+  // Provide pretty names for the filters
+  // Get the options
+  $options = $form['facets']['#options'];
+  foreach ($options as $key => $option) {
+    // Get the key value out from the bundle
+    $keyvalue = str_replace('bundle:', '', $key);
+    // If the keyvalue matches the option value, then we know
+    // the option value being displayed is lowercase and 'ugly'.
+    // If this is the case, make it 'pretty'.
+    if ($keyvalue == $option) {
+      $form['facets']['#options'][$key] = ucfirst($option);
+    }
+  }
 }
 
 /**
