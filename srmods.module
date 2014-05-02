@@ -437,3 +437,12 @@ function srmods_form_facetapi_multiselect_form_alter(&$form, &$form_state) {
   $form['#attached']['js'][] = drupal_get_path('module', 'srmods') . '/srmods.facetapi.multiselect.js';
   $form['submit']['#value'] = t('Apply filters');
 }
+
+/**
+ * Implementes hook_form_FORM_ID_alter().
+ *
+ * Make some UI changes to the apache solr search form.
+ */
+function srmods_form_apachesolr_search_custom_page_search_form_alter(&$form, &$form_state, $form_id){
+  $form['basic']['keys']['#title'] = 'Search terms';
+}
