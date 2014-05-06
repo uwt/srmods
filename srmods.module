@@ -436,7 +436,23 @@ function srmods_form_facetapi_multiselect_form_alter(&$form, &$form_state) {
   // widget on the correct form elements.
   $form['#attached']['js'][] = drupal_get_path('module', 'srmods') . '/srmods.facetapi.multiselect.js';
   // Modify the submit button value
-  $form['submit']['#value'] = t('Apply filters');
+    //dpm($form['#facetapi_multiselect']['facet_name'], '$form');
+  switch ($form['#facetapi_multiselect']['facet_name']) {
+    case 'im_field_categories':
+    $form['submit']['#value'] = t('Apply category filter');
+    break;
+    case 'bundle_name':
+    $form['submit']['#value'] = t('Apply content type filter');
+    break;
+    case 'changed':
+    $form['submit']['#value'] = t('Apply updated date filter');
+    break;
+    case 'im_field_site':
+    $form['submit']['#value'] = t('Apply section filter');
+    break;
+    default:
+    $form['submit']['#value'] = t('Apply filters');
+  }
   // Provide pretty names for the filters
   // Get the options
   $options = $form['facets']['#options'];
