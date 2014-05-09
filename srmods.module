@@ -322,7 +322,9 @@ function _srmods_employee_snippet($entity){
     $icon = l('<div class="icons-search-results-ct-employee type-icon"></div>', 
       'node/' . $entity->nid, 
       $options);
+    $return .= '<div class="icon">';
     $return .= $icon;
+    $return .= '</div>'; // End icon
 
     $return .= '<div class="title">';
     $return .= _srmods_employee_title($entity);
