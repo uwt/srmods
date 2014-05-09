@@ -140,41 +140,36 @@ function _srmods_department_snippet($entity) {
        . print_r($wrapper->field_departmenttype->value(), 1)
        . '</pre>');
      */
-    switch($wrapper->field_departmenttype->value()) {
-
-      case 'academic-programs':
-        $icon = '<div class="icons-mortarboard type-icon"></div>';
-        break;
-
-      case 'academic-support':
-        $icon = '<div class="icons-support32 type-icon"></div>';
-        break;
-      default:
-        $icon = '<div>Default, no icon yet.</div>';
-    }
+    
+    
     $options = array();
     $options['absolute'] = TRUE;
     $dept_name = l($entity->title, 'node/' . $entity->nid, $options);
+    $options['html'] = TRUE;
+    $options['attributes'] = array();
+    $options['attributes']['title'] = t('Departmental directory listing');
+    $icon = l('<div class="icons-search-results-ct-department type-icon"></div>', 
+      'node/' . $entity->nid, 
+      $options);
+
     $title .= $dept_name;
 
     $dept_summary = render(field_view_field(
           'node', $entity, 'field_departmentsummary', 'srmods_view_mode'));
 
     $dept_email = render(field_view_field(
-          'node', $entity, 'field_departmentemail', 'srmods_view_mode'));
+          'node', $entity, 'field_dept_emails', 'srmods_view_mode'));
 
     $dept_phone = render(field_view_field(
-          'node', $entity, 'field_departmentphonenumber', 'srmods_view_mode'));
+          'node', $entity, 'field_dept_phones', 'srmods_view_mode'));
 
-    $dept_url = render(field_view_field(
-          'node', $entity, 'field_departmentwebsite', 'srmods_view_mode'));
+    $dept_web = render(field_view_field(
+          'node', $entity, 'field_dept_websites', 'srmods_view_mode'));
 
     $dept_location = render(field_view_field(
           'node', $entity, 'field_location', 'srmods_view_mode'));
 
-    $dept_web = l($entity->title . ' website', $dept_url);
-
-    $return = $icon . $dept_name_display .  $dept_summary . $dept_email . $dept_phone . $dept_web . $dept_location;
+    $return = $icon . $dept_summary . $dept_email . $dept_phone . $dept_web . $dept_location;
 
     $return = '<div class="result general">';
 
@@ -317,7 +312,17 @@ function _srmods_employee_snippet($entity){
 
     $return  = '<div class="result">';
 
-    $return .= '<div class="icons-search-results-ct-employee icon">&nbsp;</div>';
+    $options = array();
+    $options['absolute'] = TRUE;
+    $dept_name = l($entity->title, 'node/' . $entity->nid, $options);
+    // Create the icon with its link
+    $options['html'] = TRUE;
+    $options['attributes'] = array();
+    $options['attributes']['title'] = t('Employee directory listing');
+    $icon = l('<div class="icons-search-results-ct-employee type-icon"></div>', 
+      'node/' . $entity->nid, 
+      $options);
+    $return .= $icon;
 
     $return .= '<div class="title">';
     $return .= _srmods_employee_title($entity);
