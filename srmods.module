@@ -19,7 +19,10 @@ function srmods_apachesolr_index_document_build(ApacheSolrDocument $document, $e
   // Add the rendered-to-html string that will replace the snippet.
   // Attempt to do this per-content-type by looking for a function
   // named '_srmods_ENTITYTYPE_snippet'
-  watchdog('srmods', $entity->type .': '. $entity->title);
+  
+  //watchdog('srmods', 'Raw $entity in _build : ' .  print_r($entity, TRUE));
+  //watchdog('srmods', 'Raw $document in _build : ' .  print_r($document));
+  //watchdog('srmods', $entity->type .': '. $entity->title);
   if(function_exists('_srmods_' . $entity->type . '_snippet')) {
     $func = '_srmods_' . $entity->type . '_snippet';
     $rendered_snippet = $func($entity);
@@ -106,10 +109,10 @@ function srmods_apachesolr_process_results(&$results, DrupalSolrQueryInterface $
  * function doesn't exist.
  */
 function _srmods_default_snippet ($entity) {
-  watchdog('srmods', 
-      '<pre>'.$entity->title.': $entity: '
-      . print_r($entity, 1)
-      . '</pre>');
+ // watchdog('srmods', 
+ //     '<pre>'.$entity->title.': $entity: '
+ //     . print_r($entity, 1)
+ //     . '</pre>');
 
   $summary = render(field_view_field('node', $entity, 'body', 'srmods_view_mode'));
   $section = render(field_view_field('node', $entity, 'field_site', 'srmods_view_mode'));
@@ -127,21 +130,7 @@ function _srmods_default_snippet ($entity) {
  */
 function _srmods_department_snippet($entity) {
   if($entity->type == 'department'){
-    /*
-       watchdog('srmods', 
-       '<pre>$entity ' . $entity->title
-       . print_r($entity->body['und'][0]['safe_summary'])
-       . '</pre>');
-     */
     $wrapper = entity_metadata_wrapper('node', $entity);
-    /*
-       watchdog('srmods', 
-       '<pre>$departmenttype in _srmods_department_snippet()'
-       . print_r($wrapper->field_departmenttype->value(), 1)
-       . '</pre>');
-     */
-    
-    
     $options = array();
     $options['absolute'] = TRUE;
     $dept_name = l($entity->title, 'node/' . $entity->nid, $options);
@@ -185,12 +174,6 @@ function _srmods_department_snippet($entity) {
     $return .= $dept_summary;
     $return .= '</div>'; // end summary
 
-    /*
-       watchdog('srmods', 
-       'dept link '
-       . print_r($dept_web, 1)
-       . '');
-     */
 
     $return .= '<div class="dept-details">';
     $return .= '<div class="first">' . $dept_web . '</div>';
@@ -202,17 +185,84 @@ function _srmods_department_snippet($entity) {
     $return .= '</div>'; // end result
 
 
-    /*
-       watchdog('srmods', 
-       '$return '
-       . print_r($return, 1)
-       . '');
-     */
+
     return $return;
 
   }else{
     return FALSE;
   }
+}
+
+/**
+* Render the html snippet for the Event content type.
+*/
+function _srmods_event_snippet($entity) {
+
+/*********************************************************/
+
+  if($entity->type == 'event'){
+    $wrapper = entity_metadata_wrapper('node', $entity);
+    $options = array();
+    $options['absolute'] = TRUE;
+    $dept_name = l($entity->title, 'node/' . $entity->nid, $options);
+    $options['html'] = TRUE;
+    $options['attributes'] = array();
+    $options['attributes']['title'] = t('Departmental directory listing');
+    $icon = l('<div class="icons-search-results-ct-event type-icon"></div>', 
+      'node/' . $entity->nid, 
+      $options);
+
+
+    $summary = render(field_view_field(
+          'node', $entity, 'body', 'srmods_view_mode'));
+
+    $date = render(field_view_field(
+          'node', $entity, 'field_event_date', 'srmods_view_mode'));
+
+    $logo = render(field_view_field(
+          'node', $entity, 'field_event_logo', 'srmods_view_mode'));
+
+    $contact = render(field_view_field(
+          'node', $entity, 'field_event_contact', 'srmods_view_mode'));
+
+    $location = render(field_view_field(
+          'node', $entity, 'field_location_postal_address', 'srmods_view_mode'));
+
+
+    $return = '<div class="result general">';
+
+    $return .= '<div class="icon">';
+    $return .= $icon;
+    $return .= '</div>'; // end icon
+
+    $return .= '<div class="title">';
+    $return .= l($entity->title, 'node/' . $entity->nid, array('absolute' => TRUE));
+    $return .= '</div>'; // end title
+
+    $return .= '<div class="summary">';
+    $return .= $summary;
+    $return .= '</div>'; // end summary
+
+
+    $return .= '<div class="dept-details">';
+    $return .= '<div class="first">' . $date . '</div>';
+    $return .= '<div class="second">' . $location . '</div>';
+    $return .= '<div class="third">' . $contact . '</div>';
+    $return .= '<div class="fourth">' . $logo . '</div>';
+    $return .= '</div>'; // end dept-details
+
+    $return .= '</div>'; // end result
+
+
+
+    return $return;
+
+  }else{
+    return FALSE;
+  }
+
+/*********************************************************/
+
 }
 
 /**
