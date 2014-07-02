@@ -231,14 +231,6 @@ function _srmods_event_snippet($entity) {
 
     $return = '<div class="result general">';
 
-    $return .= '<div class="icon">';
-    $return .= $icon;
-    $return .= '</div>'; // end icon
-
-    //$return .= '<div class="title">';
-    //$return .= l($entity->title, 'node/' . $entity->nid, array('absolute' => TRUE));
-    //$return .= '</div>'; // end title
-
     $return .= '<div class="summary">';
     $return .= $summary;
     $return .= '</div>'; // end summary
@@ -297,14 +289,6 @@ function _srmods_location_snippet($entity) {
 
 
     $return = '<div class="result general">';
-
-    $return .= '<div class="icon">';
-    $return .= $icon;
-    $return .= '</div>'; // end icon
-
-    //$return .= '<div class="title">';
-    //$return .= l($entity->title, 'node/' . $entity->nid, array('absolute' => TRUE));
-    //$return .= '</div>'; // end title
 
     $return .= '<div class="summary">';
     $return .= $summary;
