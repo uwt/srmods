@@ -207,7 +207,7 @@ function _srmods_event_snippet($entity) {
     $dept_name = l($entity->title, 'node/' . $entity->nid, $options);
     $options['html'] = TRUE;
     $options['attributes'] = array();
-    $options['attributes']['title'] = t('Departmental directory listing');
+    $options['attributes']['title'] = t('UW Tacoma Signature Event  listing');
     $icon = l('<div class="icons-search-results-ct-event type-icon"></div>', 
       'node/' . $entity->nid, 
       $options);
@@ -235,9 +235,9 @@ function _srmods_event_snippet($entity) {
     $return .= $icon;
     $return .= '</div>'; // end icon
 
-    $return .= '<div class="title">';
-    $return .= l($entity->title, 'node/' . $entity->nid, array('absolute' => TRUE));
-    $return .= '</div>'; // end title
+    //$return .= '<div class="title">';
+    //$return .= l($entity->title, 'node/' . $entity->nid, array('absolute' => TRUE));
+    //$return .= '</div>'; // end title
 
     $return .= '<div class="summary">';
     $return .= $summary;
@@ -264,6 +264,72 @@ function _srmods_event_snippet($entity) {
 /*********************************************************/
 
 }
+
+
+/**
+* Render the html snippet for the Location content type.
+*/
+function _srmods_location_snippet($entity) {
+
+/*********************************************************/
+
+  if($entity->type == 'location'){
+    $wrapper = entity_metadata_wrapper('node', $entity);
+    $options = array();
+    $options['absolute'] = TRUE;
+    $dept_name = l($entity->title, 'node/' . $entity->nid, $options);
+    $options['html'] = TRUE;
+    $options['attributes'] = array();
+    $options['attributes']['title'] = t('UWTDownTown retail listing');
+    $icon = l('<div class="icons-search-results-ct-location type-icon"></div>', 
+      'node/' . $entity->nid, 
+      $options);
+
+
+    $summary = render(field_view_field(
+          'node', $entity, 'body', 'srmods_view_mode'));
+
+    $contact = render(field_view_field(
+          'node', $entity, 'field_location_phone_number', 'srmods_view_mode'));
+
+    $location = render(field_view_field(
+          'node', $entity, 'field_location_location', 'srmods_view_mode'));
+
+
+    $return = '<div class="result general">';
+
+    $return .= '<div class="icon">';
+    $return .= $icon;
+    $return .= '</div>'; // end icon
+
+    //$return .= '<div class="title">';
+    //$return .= l($entity->title, 'node/' . $entity->nid, array('absolute' => TRUE));
+    //$return .= '</div>'; // end title
+
+    $return .= '<div class="summary">';
+    $return .= $summary;
+    $return .= '</div>'; // end summary
+
+
+    $return .= '<div class="dept-details">';
+    $return .= '<div class="first">' . $location . '</div>';
+    $return .= '<div class="third">' . $contact . '</div>';
+    $return .= '</div>'; // end dept-details
+
+    $return .= '</div>'; // end result
+
+
+
+    return $return;
+
+  }else{
+    return FALSE;
+  }
+
+/*********************************************************/
+
+}
+
 
 /**
  * Render the html snippet for the Page content type.
