@@ -74,7 +74,13 @@ function srmods_apachesolr_query_alter($query) {
 
   // Changing the default query parameter from 'or' to 'and'
   // @see http://wiki.apache.org/solr/DisMaxQParserPlugin#mm_.28Minimum_.27Should.27_Match.29
-  $query->replaceParam('mm', '100%');
+  // This means:
+  //   1 or 2 search terms: 100% must match
+  //   3 or 4 search terms:    1 fewer search terms than entered must match
+  //   5+     search terms:  66% of the search terms enterd must match
+  $query->replaceParam('mm', '2<-1 4<66%');
+  // This means ALL (100%) of the search words must be in the document
+  //$query->replaceParam('mm', '100%');
 }
 
 
