@@ -387,7 +387,7 @@ function _srmods_get_value_from_fc($entity, $field) {
       $position[$id]['phone'] = $item->field_workphone['und'][0]['safe_value'];
       // Provide the department title as a link.
       $dept_title = $item->field_department['und']['0']['entity']->title;
-      $dept_url = $item->field_department['und']['0']['entity']->field_departmentwebsite['und'][0]['safe_value'];
+      $dept_url = $item->field_department['und'][0]['entity']->field_dept_websites['und'][0]['value'];
       $position[$id]['department'] = l($dept_title, $dept_url);
     }
 
