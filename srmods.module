@@ -19,7 +19,7 @@ function srmods_apachesolr_index_document_build(ApacheSolrDocument $document, $e
   // Add the rendered-to-html string that will replace the snippet.
   // Attempt to do this per-content-type by looking for a function
   // named '_srmods_ENTITYTYPE_snippet'
-  
+
   //watchdog('srmods', 'Raw $entity in _build : ' .  print_r($entity, TRUE));
   //watchdog('srmods', 'Raw $document in _build : ' .  print_r($document));
   //watchdog('srmods', $entity->type .': '. $entity->title);
@@ -92,7 +92,7 @@ function srmods_apachesolr_query_alter($query) {
  */
 function srmods_apachesolr_process_results(&$results, DrupalSolrQueryInterface $query) {
   foreach ($results as $id => $result) {
-  //dpm($result, '$result');
+    //dpm($result, '$result');
     //dpm($result, $result['bundle']);
     switch($result['bundle']){
 
@@ -115,14 +115,14 @@ function srmods_apachesolr_process_results(&$results, DrupalSolrQueryInterface $
  * function doesn't exist.
  */
 function _srmods_default_snippet ($entity) {
- // watchdog('srmods', 
- //     '<pre>'.$entity->title.': $entity: '
- //     . print_r($entity, 1)
- //     . '</pre>');
+  // watchdog('srmods', 
+  //     '<pre>'.$entity->title.': $entity: '
+  //     . print_r($entity, 1)
+  //     . '</pre>');
 
   $summary = render(field_view_field('node', $entity, 'body', 'srmods_view_mode'));
   $section = render(field_view_field('node', $entity, 'field_site', 'srmods_view_mode'));
-  
+
   $output = '';
   $output .= '<div class="summary">';
   $output .= strip_tags($summary) . $section;
@@ -144,8 +144,8 @@ function _srmods_department_snippet($entity) {
     $options['attributes'] = array();
     $options['attributes']['title'] = t('Departmental directory listing');
     $icon = l('<div class="icons-search-results-ct-department type-icon"></div>', 
-      'node/' . $entity->nid, 
-      $options);
+        'node/' . $entity->nid, 
+        $options);
 
     $title .= $dept_name;
 
@@ -200,11 +200,11 @@ function _srmods_department_snippet($entity) {
 }
 
 /**
-* Render the html snippet for the Event content type.
-*/
+ * Render the html snippet for the Event content type.
+ */
 function _srmods_event_snippet($entity) {
 
-/*********************************************************/
+  /*********************************************************/
 
   if($entity->type == 'event'){
     $wrapper = entity_metadata_wrapper('node', $entity);
@@ -215,8 +215,8 @@ function _srmods_event_snippet($entity) {
     $options['attributes'] = array();
     $options['attributes']['title'] = t('UW Tacoma Signature Event  listing');
     $icon = l('<div class="icons-search-results-ct-event type-icon"></div>', 
-      'node/' . $entity->nid, 
-      $options);
+        'node/' . $entity->nid, 
+        $options);
 
 
     $summary = render(field_view_field(
@@ -259,17 +259,17 @@ function _srmods_event_snippet($entity) {
     return FALSE;
   }
 
-/*********************************************************/
+  /*********************************************************/
 
 }
 
 
 /**
-* Render the html snippet for the Location content type.
-*/
+ * Render the html snippet for the Location content type.
+ */
 function _srmods_location_snippet($entity) {
 
-/*********************************************************/
+  /*********************************************************/
 
   if($entity->type == 'location'){
     $wrapper = entity_metadata_wrapper('node', $entity);
@@ -280,8 +280,8 @@ function _srmods_location_snippet($entity) {
     $options['attributes'] = array();
     $options['attributes']['title'] = t('UWTDownTown retail listing');
     $icon = l('<div class="icons-search-results-ct-location type-icon"></div>', 
-      'node/' . $entity->nid, 
-      $options);
+        'node/' . $entity->nid, 
+        $options);
 
 
     $summary = render(field_view_field(
@@ -316,28 +316,28 @@ function _srmods_location_snippet($entity) {
     return FALSE;
   }
 
-/*********************************************************/
+  /*********************************************************/
 
 }
 
 
 /**
  * Render the html snippet for the Page content type.
- 
-function _srmods_page_snippet($entity){
-  $output = '';
 
-  $output .= '<div class="icon">';
-  $output .= '[ICON]';
-  $output .= '</div>';
+ function _srmods_page_snippet($entity){
+ $output = '';
 
-  $output .= '<div class="title">';
-  $output .= '[TEASER/SUMMARY TEXT TEASER/SUMMARY TEXT TEASER/SUMMARY TEXT TEASER/SUMMARY TEXT TEASER/SUMMARY TEXT]';
-  $output .= '</div>';
+ $output .= '<div class="icon">';
+ $output .= '[ICON]';
+ $output .= '</div>';
 
-  return $output;
-}
-*/
+ $output .= '<div class="title">';
+ $output .= '[TEASER/SUMMARY TEXT TEASER/SUMMARY TEXT TEASER/SUMMARY TEXT TEASER/SUMMARY TEXT TEASER/SUMMARY TEXT]';
+ $output .= '</div>';
+
+ return $output;
+ }
+ */
 
 /**
  * Helper function to process/render/retrieve values from fields.
@@ -426,8 +426,8 @@ function _srmods_employee_snippet($entity){
     $options['attributes'] = array();
     $options['attributes']['title'] = t('Employee directory listing');
     $icon = l('<div class="icons-search-results-ct-employee type-icon"></div>', 
-      'node/' . $entity->nid, 
-      $options);
+        'node/' . $entity->nid, 
+        $options);
     $return .= '<div class="icon">';
     $return .= $icon;
     $return .= '</div>'; // End icon
@@ -549,22 +549,22 @@ function srmods_form_facetapi_multiselect_form_alter(&$form, &$form_state) {
   // widget on the correct form elements.
   $form['#attached']['js'][] = drupal_get_path('module', 'srmods') . '/srmods.facetapi.multiselect.js';
   // Modify the submit button value
-    //dpm($form['#facetapi_multiselect']['facet_name'], '$form');
+  //dpm($form['#facetapi_multiselect']['facet_name'], '$form');
   switch ($form['#facetapi_multiselect']['facet_name']) {
     case 'im_field_categories':
-    $form['submit']['#value'] = t('Apply category filter');
-    break;
+      $form['submit']['#value'] = t('Apply category filter');
+      break;
     case 'bundle_name':
-    $form['submit']['#value'] = t('Apply content type filter');
-    break;
+      $form['submit']['#value'] = t('Apply content type filter');
+      break;
     case 'changed':
-    $form['submit']['#value'] = t('Apply updated date filter');
-    break;
+      $form['submit']['#value'] = t('Apply updated date filter');
+      break;
     case 'im_field_site':
-    $form['submit']['#value'] = t('Apply section filter');
-    break;
+      $form['submit']['#value'] = t('Apply section filter');
+      break;
     default:
-    $form['submit']['#value'] = t('Apply filters');
+      $form['submit']['#value'] = t('Apply filters');
   }
   // Provide pretty names for the filters
   // Get the options
